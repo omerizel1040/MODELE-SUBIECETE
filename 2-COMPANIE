@@ -1,0 +1,160 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include <string>
+#include <vector>
+#include <cstring>
+
+using namespace std;
+
+class Angajat {
+private:
+	const int id;
+	char* nume;
+	float salariu;
+public:
+	Angajat() :id(0) {
+		this->nume = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->nume, "NECUNOSCUT");
+		this->salariu = 0;
+	}
+	Angajat(const int _id, const char* n, float s) :id(_id) {
+		this->nume = new char[strlen(n) + 1];
+		strcpy(this->nume, n);
+		this->salariu = s;
+	}
+	Angajat(const Angajat& a) :id(a.id){
+		this->nume = new char[strlen(a.nume) + 1];
+		strcpy(this->nume, a.nume);
+		this->salariu = a.salariu;
+	}
+	Angajat& operator=(const Angajat& a) {
+		if (this != &a) {
+			if (this->nume != nullptr) {
+				delete[] this->nume;
+				this->nume = nullptr;
+			}
+			this->nume = new char[strlen(a.nume) + 1];
+			strcpy(this->nume, a.nume);
+			this->salariu = a.salariu;
+		}
+		return *this;
+	}
+	//++a1 10%
+	Angajat& operator++() {
+		this->salariu *= 1.10;
+		return *this;
+	}
+	//a1=a2-10
+	Angajat operator-(float valoare) {
+		Angajat copie(*this);
+		copie.salariu -= valoare;
+		return copie;
+	}
+	float getSalariu() const { return salariu; }
+	const char* getNume() const { return nume; }
+	~Angajat() {
+		if (this->nume != nullptr) {
+			delete[] this->nume;
+			this->nume = nullptr;
+		}
+	}
+	friend ostream& operator<<(ostream& out,const Angajat& a) {
+		out << "\nID ul este: " << a.id;
+		out << "\nNumele este: " << a.nume;
+		out << "\nSalariul este: " << a.salariu;
+		return out;
+	}
+};
+
+class Companie {
+private:
+	string denumire;
+	Angajat** angajati;
+	int nrAngajati;
+public:
+	Companie() {
+		this->denumire = "NECUNOSCUT";
+		this->angajati = nullptr;
+		this->nrAngajati = 0;
+	}
+	//constrc cu toti parametrii SHALLOW COPY
+	Companie(string d, Angajat** lista, int nr) {
+		this->denumire = d;
+		this->angajati = lista;
+		this->nrAngajati = nr;
+	}
+	//! returneaza true daca firma nu are angajati
+	bool operator!() const {
+		if (this->angajati == nullptr || this->nrAngajati <= 0) {
+			return true;
+		}
+		return false;
+	}
+	//FUZIUNE
+	Companie operator+(const Companie& c2) const {
+		string numeNou = this->denumire + " & " + c2.denumire;
+		int nrNou = this->nrAngajati + c2.nrAngajati;
+
+		// Alocam vectorul de pointeri pentru noua companie
+		Angajat** listaNoua = new Angajat * [nrNou];
+
+		// Copiem adresele din prima firma
+		for (int i = 0; i < this->nrAngajati; i++) {
+			listaNoua[i] = this->angajati[i];
+		}
+		// Copiem adresele din a doua firma
+		for (int i = 0; i < c2.nrAngajati; i++) {
+			listaNoua[this->nrAngajati + i] = c2.angajati[i];
+		}
+
+		return Companie(numeNou, listaNoua, nrNou);
+	
+	}
+
+	friend ostream& operator<<(ostream& out, const Companie& c) {
+		out << "\nDenumirea companiei este: " << c.denumire;
+		out << "\nNr de angajati este: " << c.nrAngajati;
+		for (int i = 0; i < c.nrAngajati; i++) {
+			if (c.angajati[i]) {
+				out << "\n" << *(c.angajati[i]);
+			}
+		}
+		return out;
+	}
+};
+
+
+int main() {
+	Angajat a0;
+	cout << a0;
+	cout << endl;
+	Angajat a1(120, "Costachescu", 12000),a2(a1);
+	cout << a1;
+	cout << endl;
+	cout << a2;
+	cout << endl;
+	++a1;
+	cout << a1;
+	a1 = a2 - 10;
+	cout << endl;
+	cout << a1;
+
+	cout << endl;
+	Angajat a3(201, "Georgescu Dan", 11000);
+	Angajat a4(202, "Dumitru Elena", 14500);
+	Angajat* lista_c2[] = { &a3, &a4 };
+
+	// Construim c2
+	Companie c2("Tech SA", lista_c2, 2);
+	//CREAM VECTORUL DE POINETR SHALLOW COPY
+	Angajat* echipa[] = { &a1,&a2 };
+	Companie c1("SoftTech Romania", echipa, 2);
+	
+	cout << c1;
+	cout << endl;
+	cout << !c1;
+	cout << endl;
+	cout << "\nDUPA FUZIUNE: " << endl;
+	c1 = c1 + c2;
+	cout << c1;
+}
