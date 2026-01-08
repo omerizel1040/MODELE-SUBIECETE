@@ -1,0 +1,144 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<vector>
+using namespace std;
+
+class Ingredient {
+private:
+	const int cod;
+	char* denumire;
+	int stoc;
+	bool esteAlergen;
+public:
+	Ingredient():cod(0) {
+		this->denumire = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->denumire, "NECUNOSCUT");
+		this->stoc = 0;
+		this->esteAlergen = false;
+	}
+	Ingredient(const int _cod, const char* d, int s, bool e) :cod(_cod) {
+		this->denumire = new char[strlen(d) + 1];
+		strcpy(this->denumire, d);
+		this->stoc = s;
+		this->esteAlergen =e;
+	}
+	Ingredient(const Ingredient& i):cod(i.cod) {
+		this->denumire = new char[strlen(i.denumire) + 1];
+		strcpy(this->denumire, i.denumire);
+		this->stoc = i.stoc;
+		this->esteAlergen = i.esteAlergen;
+	}
+	Ingredient& operator=(const Ingredient& i) {
+		if (this != &i) {
+			if (this->denumire != nullptr) {
+				delete[] this->denumire;
+				this->denumire = nullptr;
+			}
+			this->denumire = new char[strlen(i.denumire) + 1];
+			strcpy(this->denumire, i.denumire);
+			this->stoc = i.stoc;
+			this->esteAlergen = i.esteAlergen;
+		}
+		return *this;
+	}
+	~Ingredient() {
+		if (this->denumire != nullptr) {
+			delete[] this->denumire;
+			this->denumire = nullptr;
+		}
+	}
+	//i2=i1-10
+	Ingredient operator-(int valoare) {
+		Ingredient copie(*this);
+		copie.stoc -= valoare;
+		if (copie.stoc <= 0) {
+			copie.stoc = 0;
+		}
+		return copie;
+	}
+	string getDenumire() const { return string(denumire); }
+	//i1=10+i2
+	friend Ingredient operator+(int valoare, const Ingredient& i) {
+		Ingredient copie(i);
+		copie.stoc += valoare;
+		return copie;
+	}
+	friend ostream& operator<<(ostream& out, const Ingredient& i) {
+		out << "\nCodul este: " << i.cod;
+		out << "\nDenumirea este: " << i.denumire;
+		out << "\nStocul este: " << i.stoc;
+		out << "\nEste alergen? " << i.esteAlergen;
+		return out;
+	}
+
+};
+class Reteta {
+private:
+	string numeReteta;
+	vector<Ingredient> ingrediente;
+public:
+	Reteta(string n) {
+		this->numeReteta = n;
+	}
+	//POPULARE CU ASIGURAREA UNICIITATII DUPA DENUMIRE
+	void adaugaIngredient(const Ingredient& i) {
+		bool exista = false;
+		for (const auto& ing : ingrediente) {
+			if (ing.getDenumire() == i.getDenumire()) {
+				exista = true;
+				break;
+			}
+		}
+		if (!exista) {
+			ingrediente.push_back(i);
+		}
+	}
+	//!=
+	bool operator!=(string den) {
+		for (const auto& ing : ingrediente) {
+			if (ing.getDenumire() == den) return false;
+		}
+		return true;
+	}
+	//returneazza denumirea in de pe pozitia index
+	string operator[](int index) {
+		if (index > 0 && index < ingrediente.size()) {
+			return ingrediente[index].getDenumire();
+		}
+		return "ONDE INVALID";
+	}
+	friend ostream& operator<<(ostream& out, const Reteta& r) {
+		out << "\n--- " << r.numeReteta << " ---\nIngrediente:";
+		for (const auto& ing : r.ingrediente) out << "\n  " << ing;
+		return out;
+	}
+
+
+};
+
+int main() {
+	Ingredient i1(102, "Faina", 100, true);
+	cout << i1;
+	cout << endl;
+	Ingredient i2(105, "Zahar", 300, false);
+	cout << i2;
+	cout << endl;
+	/*i1 = i2;
+	cout << i1;*/
+	cout << endl;
+	Reteta r1("Prajitura");
+	r1.adaugaIngredient(i1);
+	cout << endl;
+	r1.adaugaIngredient(i2);
+	cout << r1;
+	cout << endl;
+	if (r1 != "Faina")
+		cout << "\nNU ARE FAINA";
+	else
+		cout << "\nARE FAINA";
+	cout << endl;
+	string val1 = r1[1];
+	cout << "Ingredientul de pe poz 1 este: " << val1;
+
+}
