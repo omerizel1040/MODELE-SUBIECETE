@@ -1,0 +1,113 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<vector>
+using namespace std;
+
+enum TipPasager {
+	ECONOMY, BUSINESS, FIRST_CLASS
+};
+
+class Pasager {
+private:
+	char* nume;
+	float pretBilet;
+	string rand;
+	TipPasager tip;
+public:
+	Pasager() {
+		this->nume = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->nume, "NECUNOSCUT");
+		this->pretBilet = 0;
+		this->rand = "NECUNOSCUT";
+		this->tip = ECONOMY;
+	}
+	Pasager(const char* n, float p, string r, bool esteBusiness) {
+		this->nume = new char[strlen(n) + 1];
+		strcpy(this->nume, n);
+		this->pretBilet = p;
+		this->rand = r;
+		this->tip = esteBusiness ? BUSINESS : ECONOMY;
+	}
+	Pasager(const Pasager& p) {
+		this->nume = new char[strlen(p.nume) + 1];
+		strcpy(this->nume, p.nume);
+		this->pretBilet = p.pretBilet;
+		this->rand = p.rand;
+		this->tip = p.tip;
+	}
+	
+	~Pasager() {
+		if (this->nume != nullptr) {
+			delete[] this->nume;
+			this->nume = nullptr;
+		}
+	}
+	bool operator==(const Pasager& p) const {
+		return(
+			this->pretBilet == p.pretBilet &&
+		this->rand == p.rand &&
+		this->tip == p.tip 
+			);
+	}
+	friend ostream& operator<<(ostream& out, const Pasager& p) {
+		out << "\nNumele este: " << p.nume;
+		out << "\nPretul biletului este: " << p.pretBilet;
+		out << "\nRandul este: " << p.rand;
+		out << "\nTipul este: " << p.tip;
+		return out;
+	}
+	float getPretBilet() const { return pretBilet; }
+};
+
+class Calatorie {
+private:
+	string destinatie;
+	vector<Pasager*> pasageri;//relatia 1-M
+public:
+	Calatorie(string d) {
+		this->destinatie = d;
+	}
+	//METODA ADAUGARE PASAGGER
+	void adaugaPasager(Pasager& p) {
+		pasageri.push_back(&p);
+	}
+	friend ostream& operator<<(ostream& out, const Calatorie& c) {
+		out << "\nDestinantia este: " << c.destinatie;
+		out << "\nPasagerii: " << c.pasageri.size();
+		return out;
+	}
+	float getTotalInasari() const {
+		float total = 0;
+		for (auto p : pasageri) total += p->getPretBilet();
+		return total;
+	}
+	// Operator - intre doua calatorii: returneaza diferenta de incasari
+	float operator-(const Calatorie& c2) const {
+		return this->getTotalInasari() - c2.getTotalInasari();
+	}
+};
+int main() {
+	Pasager p1("Costandache Tudoreanu", 105.4, "12B", true),p2(p1);
+	cout << p1;
+	cout << endl;
+	cout << p2;
+	cout << endl;
+	if (p1 == p2)
+		cout << "\nPasagerii au toate campurile egale exceptand numele";
+	else
+		cout << "\nNu au campuri egale";
+	cout << endl;
+	Pasager p3("Ioana Ana", 95.8, "14A", false);
+	cout << p3;
+	cout << endl;
+	if (p1 == p3)
+		cout << "\nPasagerii au toate campurile egale exceptand numele";
+	else
+		cout << "\nNu au campuri egale";
+	cout << endl;
+	Calatorie c1("Londra"), c2("Paris");
+	c1.adaugaPasager(p1);
+	c2.adaugaPasager(p2);
+	cout << c1;
+	}
