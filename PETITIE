@@ -1,0 +1,128 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<vector>
+#include<map>
+#include<vector>
+using namespace std;
+
+class Petitie {
+protected:
+	const int id;
+	static int contor;
+	char* solicitant; // Alocat dinamic
+	string categorie;
+	string descriere;
+	int zileTrecute;
+	bool esteRezolvata;
+public:
+	Petitie() :id(++contor) {
+		this->solicitant = new char[strlen("ANONIM") + 1];
+		strcpy(this->solicitant, "ANONIM");
+		this->categorie = "NECUNOSCUT";
+		this->descriere = "NECUNOSCUT";
+		this->zileTrecute = 0;
+		this->esteRezolvata = false;
+
+	}
+	Petitie(const char* s, string c, string d, int z, bool e) :id(++contor) {
+		this->solicitant = new char[strlen(s) + 1];
+		strcpy(this->solicitant, s);
+		this->categorie = c;
+		this->descriere = d;
+		this->zileTrecute = z;
+		this->esteRezolvata = false;
+	}
+	Petitie(const Petitie& p) :id(++contor) {
+		this->solicitant = new char[strlen(p.solicitant) + 1];
+		strcpy(this->solicitant, p.solicitant);
+		this->categorie = p.categorie;
+		this->descriere = p.descriere;
+		this->zileTrecute = p.zileTrecute;
+		this->esteRezolvata = p.esteRezolvata;
+	}
+	Petitie& operator=(const Petitie& p) {
+		if (this != &p) {
+			if (this->solicitant != nullptr) {
+				delete[] this->solicitant;
+				this->solicitant = nullptr;
+			}
+			this->solicitant = new char[strlen(p.solicitant) + 1];
+			strcpy(this->solicitant, p.solicitant);
+			this->categorie = p.categorie;
+			this->descriere = p.descriere;
+			this->zileTrecute = p.zileTrecute;
+			this->esteRezolvata = p.esteRezolvata;
+		}
+		return *this;
+	}
+	~Petitie() {
+		if (this->solicitant != nullptr) {
+			delete[] this->solicitant;
+			this->solicitant = nullptr;
+		}
+	}
+	bool operator !() const {
+		return(
+			!esteRezolvata && zileTrecute > 30
+			);
+	}
+	void operator~() {
+		esteRezolvata = true;
+	}
+	string getCategorie() const { return categorie; }
+	virtual void afiseazaTip() {
+		cout << "Petitie generala";
+	}
+	friend ostream& operator<<(ostream& out, const Petitie& p) {
+		out << "\nID ul este: " << p.id;
+		out << "\nSolicitantul este: " << p.solicitant;
+		out << "\nCategorie: " << p.categorie;
+		out << "\nZile trecute: " << p.zileTrecute;
+		out << "\nStare: " << (p.esteRezolvata ? "REZOLVATA" : "DESCHISA");
+		return out;
+	}
+};
+int Petitie::contor = 0;
+class PetitieUrgenta :public Petitie {
+private:
+	int gradUrgenta;
+public:
+	PetitieUrgenta(const char* s,  string c, string d, int z, int g) :Petitie(s, c, d, z, false) {
+		this->gradUrgenta = g;
+	}
+	void afiseazaTip() override {
+		cout << "\nPetitie urgenta " << gradUrgenta;
+	}
+	
+};
+map<string, vector<Petitie>> grupare;
+
+int main() {
+	Petitie p1("Andrei Gheorghe", "Urbanism", "Groapa in drum", 45,false);
+	Petitie p2("Maria Ioana", "Social", "Ajutor incalzire", 10,true);
+
+	cout << p1 << endl;
+	cout << endl;
+	cout << p2 << endl;
+	if (!p1)
+		cout << "\nA DEPASIT";
+	else
+		cout << "\nNU A DEPASIT";
+	cout << endl;
+	~p1;
+	cout << "\nDupa rezolvare:" << p1 << endl;
+	Petitie* p = new PetitieUrgenta("Mihai", "Apa", "Avarie conducta", 5, 10);
+	p->afiseazaTip();
+	delete p;
+	cout << endl;
+	map<string, vector<Petitie>> grupare;
+	grupare[p1.getCategorie()].push_back(p1);
+	grupare[p2.getCategorie()].push_back(p2);
+
+	cout << "\n\nPetiții grupate pe categorii:";
+	for (auto& it : grupare) {
+		cout << "\nCategoria: " << it.first
+			<< " -> " << it.second.size() << " petiții";
+	}
+}
