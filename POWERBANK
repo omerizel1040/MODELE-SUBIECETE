@@ -1,0 +1,156 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+using namespace std;
+
+class PowerBank {
+private:
+    const int id;              // membru CONST
+    static int contor;         // membru STATIC
+    int capacitate;            // mAh
+    float greutate;            // grame
+    int nrPorturi;
+    char* culoare;             // ALOCAT DINAMIC
+    int nivelIncarcare;        // procent 0–1
+public:
+    PowerBank() :id(++contor) {
+        this->capacitate = 0;
+        this->greutate = 0;
+        this->nrPorturi = 0;
+        this->culoare = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->culoare, "NECUNOSCUT");
+        this->nivelIncarcare = 0;
+    }
+    PowerBank(int c, float g, int n, const char* cu, int ni) :id(++contor) {
+        this->capacitate = c;
+        this->greutate = g;
+        this->nrPorturi = n;
+        this->culoare = new char[strlen(cu) + 1];
+        strcpy(this->culoare, cu);
+        this->nivelIncarcare = ni;
+    }
+    //COPIERE
+    PowerBank(const PowerBank& p):id(++contor) {
+        this->capacitate = p.capacitate;
+        this->greutate = p.greutate;
+        this->nrPorturi = p.nrPorturi;
+        this->culoare = new char[strlen(p.culoare) + 1];
+        strcpy(this->culoare, p.culoare);
+        this->nivelIncarcare = p.nivelIncarcare;
+    }
+    //operatorul egal
+    PowerBank& operator=(const PowerBank& p) {
+        if (this != &p) {
+            if (this->culoare != nullptr) {
+                delete[] this->culoare;
+                this->culoare = nullptr;
+            }
+            this->capacitate = p.capacitate;
+            this->greutate = p.greutate;
+            this->nrPorturi = p.nrPorturi;
+            this->culoare = new char[strlen(p.culoare) + 1];
+            strcpy(this->culoare, p.culoare);
+            this->nivelIncarcare = p.nivelIncarcare;
+        }
+        return *this;
+    }
+    void operator+=(int procent) {
+        this->nivelIncarcare += procent;
+        if (this->nivelIncarcare > 100) {
+            this->nivelIncarcare = 100;
+        }
+    }
+    int getincarcare() const{
+        return nivelIncarcare;
+    }
+    void operator-=(int procent) {
+        this->nivelIncarcare -= procent;
+        if (this->nivelIncarcare <0) {
+            this->nivelIncarcare = 0;
+        }
+    }
+    bool operator==(const PowerBank& pb) const {
+        return (capacitate == pb.capacitate &&
+            greutate == pb.greutate &&
+            nrPorturi == pb.nrPorturi &&
+            nivelIncarcare == pb.nivelIncarcare &&
+            strcmp(culoare, pb.culoare) == 0
+            );
+
+            
+    }
+    ~PowerBank() {
+        if (this->culoare != nullptr) {
+            delete[] this->culoare;
+            this->culoare = nullptr;
+        }
+    }
+    bool operator>(const PowerBank& p) const {
+        return this->nivelIncarcare > p.nivelIncarcare;
+    }
+    friend ostream& operator<<(ostream& out, const PowerBank& p) {
+        out << "\ID ul este: " << p.id;
+        out << "\nCapacitatea este: " << p.capacitate;
+        out << "\nGreutatea este: " << p.greutate;
+        out << "\nNr porturi: " << p.nrPorturi;
+        out << "\nCuloarea este: " << p.culoare;
+        out << "\nNivelul de incarcare: " << p.nivelIncarcare;
+        return out;
+
+    }
+};
+int PowerBank::contor = 0;
+class PowerBankRapid :public PowerBank {
+private:
+    bool incarcareRapida;
+public:
+    PowerBankRapid(int c, float g, int n, const char* cu, int ni, bool rapid) :PowerBank(c, g, n, cu, ni) {
+        this->incarcareRapida = rapid;
+    }
+    void afiseaza() {
+        cout << *this;
+        cout << "\nIncarcare rapida: " << (incarcareRapida ? "DA" : "NU");
+    }
+};
+template<typename T>
+T maxim(T a, T b) {
+    return (a > b) ? a : b;
+}
+int main() {
+    PowerBank p0;
+   
+    cout << endl;
+    PowerBank p1(10000, 220, 2, "Negru", 50),p2(p1);
+    cout << endl;
+    cout << p1;
+    cout << endl;
+    /*cout << p2;*/
+    PowerBank p3(80000, 350, 3, "Albastru", 10);
+   /* cout << p3;
+    p1 = p3;*/
+   // cout << endl;
+   // cout << endl;
+   ///* cout << p1;*/
+   // p1 += 50;
+   // cout << "\nNivelul de incarcare este acuma: " << p1.getincarcare();
+   // p3 -= 2;
+   // cout << endl;
+   // cout << "\nAcuma nivelul este: " << p3.getincarcare();
+   // cout << endl;
+   // if (p1 == p3) 
+   //     cout << "\nDA SUNT EGALE";
+   // else
+   //     cout << "\nNU SUNT EGALE";
+   // cout << endl;
+   // PowerBankRapid pr(20000, 300, 3, "Alb", 80, false);
+   // cout << "\nPowerBank Rapid: ";
+   // cout << endl;
+   // pr.afiseaza();
+   // cout << endl;
+    /*PowerBank max = maxim(p1, p3);
+    cout << "\nCel mai mare nivel de incarcare este: ";
+    cout << endl;
+    cout << max;*/
+    int max = maxim(p1.getincarcare(), p3.getincarcare());
+    cout << "\nNivelul maxim de incarcare este: " << max;
+    
+}
