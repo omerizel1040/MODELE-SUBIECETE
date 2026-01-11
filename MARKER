@@ -1,0 +1,132 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<map>
+using namespace std;
+
+class Marker {
+private:
+	const int id;
+	static int contor;
+	char* culoare;
+	float dimensiune;
+	string producator;
+public:
+	Marker() :id(++contor) {
+		this->culoare = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->culoare, "NECUNOSCUT");
+		this->dimensiune = 0;
+		this->producator = "ANONIM";
+	}
+	Marker(const char* c, float d, string p) :id(++contor) {
+		this->culoare = new char[strlen(c) + 1];
+		strcpy(this->culoare, c);
+		this->dimensiune = d;
+		this->producator = p;
+	}
+	//copiere
+	Marker(const Marker& m):id(++contor) {
+		this->culoare = new char[strlen(m.culoare) + 1];
+		strcpy(this->culoare, m.culoare);
+		this->dimensiune = m.dimensiune;
+		this->producator = m.producator;
+	}
+	int getID() const {
+		return id;
+	}
+	//op =
+	Marker& operator=(const Marker& m) {
+		if (this != &m) {
+			if (this->culoare != nullptr) {
+				delete[] this->culoare;
+				this->culoare = nullptr;
+			}
+			this->culoare = new char[strlen(m.culoare) + 1];
+			strcpy(this->culoare, m.culoare);
+			this->dimensiune = m.dimensiune;
+			this->producator = m.producator;
+		}
+		return *this;
+	}
+	~Marker() {
+		if (this->culoare != nullptr) {
+			delete[] this->culoare;
+			this->culoare = nullptr;
+		}
+	}
+	bool operator==(const Marker& m) const {
+		return (
+			strcmp(culoare,m.culoare)==0 &&
+			producator==m.producator
+			);
+	}
+	//VIRTUALIZARE
+	virtual void folosire() {
+		cout << "\nMarker clasic pentru tabla";
+	}
+	friend ostream& operator<<(ostream& out, const Marker& m) {
+		out << "\nID ul este: " << m.id;
+		out << "\nCuloarea este: " << m.culoare;
+		out << "\nDimensiunea este: " << m.dimensiune;
+		out << "\nProducatorul este: " << m.producator;
+		return out;
+	}
+};
+int Marker::contor = 0;
+class MarkerElectronic :public Marker {
+private:
+	int baterie;
+	float razaActiune;
+public:
+	MarkerElectronic() :Marker() {
+		this->baterie = 0;
+		this->razaActiune = 0;
+	}
+	MarkerElectronic(const char* c, float d, string p, int b, float r) :Marker(c, d, p) {
+		this->baterie = b;
+		this->razaActiune = r;
+	}
+	//SUPRASCRIERE METODA VIRTAULA LATE BLENDING
+	void folosire() override {
+		cout << "\nMarker electronic cu raza: " << razaActiune;
+	}
+	friend ostream& operator<<(ostream& out, const MarkerElectronic& m) {
+		out << (Marker&)m;
+		out << "\nBateria: " << m.baterie;
+		out << "\nRaza de actiune este: " << m.razaActiune;
+		return out;
+	}
+};
+
+
+//int cheia ID ul
+//sring numele proprietarului
+
+int main() {
+	Marker m0;
+	cout << m0;
+	cout << endl;
+	Marker m1("Rosu", 1.2f, "Pilot");
+	Marker m3("Rosu", 4, "Pilot");
+	Marker m2("Albastru", 1.0f, "Faber");
+	cout << m1;
+	cout << endl;
+	if (m1 == m3) 
+		cout << "\nPRODUCATOR SI CULARE LA FEL";
+	else
+		cout << "\nNU SUNT LA FEL";
+	cout << endl;
+	MarkerElectronic me1("Negru", 1.5f, "Samsung", 80, 10);
+	cout << me1;
+	cout << endl;
+	Marker* p;
+	p = &m1;
+	p->folosire(); //marker clasic
+	p = &me1;
+	p->folosire();
+	cout << endl;
+	map<int, string> proprietari;
+	proprietari[m1.getID()] = "Profesor Matei";
+	proprietari[me1.getID()] = "Profesor Popescu";
+	cout << "Proprietar marker m1: " << proprietari[m1.getID()] << endl;
+}
