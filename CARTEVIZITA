@@ -1,0 +1,128 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<set>
+using namespace std;
+
+enum Material {
+    HARTIE, PLASTIC, METAL
+};
+
+class CarteVizita {
+private:
+    const int id;              // CONST
+    static int contor;         // STATIC
+    char* nume;                // ALOCAT DINAMIC
+    string telefon;
+    Material material;
+    float cost;
+public:
+    CarteVizita() :id(++contor) {
+        this->nume = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->nume, "NECUNOSCUT");
+        this->telefon = "0000000000";
+        this->material = HARTIE;
+        this->cost = 0;
+    }
+    CarteVizita(const char* n, string t, Material ma, float c) :id(++contor) {
+        this->nume = new char[strlen(n) + 1];
+        strcpy(this->nume, n);
+        this->telefon = t;
+        this->material = ma;
+        this->cost = c;
+    }
+    CarteVizita(const CarteVizita& c):id(++contor) {
+        this->nume = new char[strlen(c.nume) + 1];
+        strcpy(this->nume, c.nume);
+        this->telefon = c.telefon;
+        this->material = c.material;
+        this->cost = c.cost;
+    }
+    CarteVizita& operator=(const CarteVizita& c) {
+        if (this != &c) {
+            if (this->nume != nullptr) {
+                delete[] this->nume;
+                this->nume = nullptr;
+            }
+            this->nume = new char[strlen(c.nume) + 1];
+            strcpy(this->nume, c.nume);
+            this->telefon = c.telefon;
+            this->material = c.material;
+            this->cost = c.cost;
+        }
+        return *this;
+    }
+    bool operator >=(const CarteVizita& c) const {
+        return cost >= c.cost;
+    }
+    ~CarteVizita() {
+        if (this->nume != nullptr) {
+            delete[] this->nume;
+            this->nume = nullptr;
+        }
+    }
+    //VIRTUALIZARE
+    virtual void afisare() const {
+        cout << *this;
+    }
+    friend ostream& operator<<(ostream& out, const CarteVizita& c) {
+        out << "\nID ul este: " << c.id;
+        out << "\nNumele este: " << c.nume;
+        out << "\nNumarul de telefon este: " << c.telefon;
+        out << "\nMaterialul este: " << c.material;
+        out << "\nCostul: " << c.cost;
+        return out;
+
+    }
+    const char* getNume() const {
+        return nume;
+    }
+
+};
+int CarteVizita::contor = 0;
+
+class CarteVizitaElectronica :public CarteVizita {
+private:
+    bool areOR;
+public:
+    CarteVizitaElectronica() :CarteVizita() {
+        this->areOR = false;
+    }
+    CarteVizitaElectronica(const char* n, string t, Material ma, float c, bool are) :CarteVizita(n, t, ma, c) {
+        this->areOR = are;
+    }
+    friend ostream& operator<<(ostream& out, const CarteVizitaElectronica& c) {
+        out << (CarteVizita&)c;
+        out << "\nAe cod QR: " << (c.areOR ? "DA" : "NU");
+        return out;
+    }
+    
+};
+struct Comparare {
+    bool operator()(const CarteVizita& a, const CarteVizita& b) const {
+        return strcmp(a.getNume(), b.getNume()) < 0;
+    }
+};
+
+set<CarteVizita, Comparare> colectie;
+int main() {
+    CarteVizita c1("Ion", "0711", HARTIE, 10),c3=c1;
+    CarteVizita c2("Ana", "0722", PLASTIC, 15);
+    /*cout << c1;
+    cout << endl;
+    cout << c3;
+    c1 = c2;*/
+    cout << endl;
+    cout << c1;
+    CarteVizitaElectronica ce("Dan", "0733", METAL, 20, true);
+    cout << endl;
+    cout << ce;
+    cout << endl;
+    cout << "\nColctia este: ";
+    colectie.insert(c1);
+    colectie.insert(c2);
+    colectie.insert(c1); // NU se adauga din nou
+    for (const auto& c : colectie) {
+        cout << c << endl;
+    }
+}
