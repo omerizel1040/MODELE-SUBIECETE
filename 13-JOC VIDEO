@@ -1,0 +1,316 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<cstring>
+using namespace std;
+
+enum TipCaracter { ZBURATOR, PAMANT, APA };
+
+class Caracter {
+private:
+    char* denumire;
+    TipCaracter tipCaracter;
+    float* listaArme;
+    int nrArme;
+    int nivelViata;
+public:
+
+    //PRIMUL PAS:CONSTRUCTOR DEFAULT
+
+    Caracter() {
+        this->denumire = new char[strlen("NECUNOSCUT")+1];
+        strcpy(this->denumire, "NECUNOSCUT");
+        this->tipCaracter = PAMANT;
+        this->nrArme = 0;
+        this->listaArme = nullptr;
+        this->nivelViata = 0;
+    }
+
+    //AL CINCLIEA PAS:CONSTRUCTOR CU TOTI PARAMETRII
+    Caracter(const char* _denumire, TipCaracter tip, float* lista,int nr,int nivel) {
+        this->denumire = new char[strlen(_denumire) + 1];
+        strcpy(this->denumire, _denumire);
+        this->tipCaracter = tip;
+        this->nrArme = nr;
+        this->listaArme = new float[nrArme];
+        if (this->nrArme > 0 && this->listaArme != nullptr) {
+            for (int i = 0; i < nrArme; i++) {
+                this->listaArme[i] = lista[i];
+            }
+        }
+        this->nivelViata = nivel;
+    }
+
+    //AL SAPTELEA PAS: CONSTRUCTOR DOAR CU  UN PARAMETRU DENUMIRE
+    
+    Caracter(const char* _denumire) {
+        this->denumire = new char[strlen(_denumire) + 1];
+        strcpy(this->denumire, _denumire);
+        //IN REST COPIEM TOT CE AVEM LA CONSTRUCTORUL DEFAULT
+        this->tipCaracter = PAMANT;
+        this->nrArme = 0;
+        this->listaArme = nullptr;
+        this->nivelViata = 0;
+
+    }
+
+    //COPY CONSTRUCTOR
+    Caracter(const Caracter& c) {
+        this->denumire = new char[strlen(c.denumire) + 1];
+        strcpy(this->denumire, c.denumire);
+        this->tipCaracter =c.tipCaracter;
+        this->nrArme = c.nrArme;
+        this->listaArme = new float[c.nrArme];
+        if (c.nrArme > 0 && c.listaArme != nullptr) {
+            for (int i = 0; i < c.nrArme; i++) {
+                this->listaArme[i] = c.listaArme[i];
+            }
+        }
+        this->nivelViata = c.nivelViata;
+    }
+
+    //OPERATORUL =
+    Caracter& operator=(const Caracter& c) {
+        if (this != &c) {
+            
+                if (this->listaArme != nullptr) {
+                    delete[] this->listaArme;
+                    this->listaArme = nullptr;
+                }
+                if (this->denumire != nullptr) {
+                    delete[] this->denumire;
+                    this->denumire = nullptr;
+                }
+                this->denumire = new char[strlen(c.denumire) + 1];
+                strcpy(this->denumire, c.denumire);
+                this->tipCaracter = c.tipCaracter;
+                this->nrArme = c.nrArme;
+                this->listaArme = new float[c.nrArme];
+                if (c.nrArme > 0 && c.listaArme != nullptr) {
+                    for (int i = 0; i < c.nrArme; i++) {
+                        this->listaArme[i] = c.listaArme[i];
+                    }
+                }
+                this->nivelViata = c.nivelViata;
+               
+            
+        }
+        return *this;
+    }
+
+    //AL NOUALEA PAS: POST INCREMENTARE CRESTE NIVELUL VIETII
+    void operator++(int)//in paranteza int oentru ca niveulu de viata este de tip int
+    {
+        if (this->nivelViata < 100) {
+            this->nivelViata++;
+        }
+
+    }
+
+    //AL UNSPELEA PAS: SA VEDEM DACA 2 CONSTRUCTORI AU 3 CAMPURI EGALE SI SA AFISAM DA SAU NU,DE ASTA FOLOSIM BOOL OPERATORUL == PENTRU A AVEA CA SI RETURN TRUE SAU FALSE
+        //alegem noi ce parametrii vrem sa egalam
+    bool operator==(const Caracter& c) {
+        return (
+            this->nivelViata == c.nivelViata &&
+            this->nrArme==c.nrArme &&
+            
+            // ASA E GRESIT DA EROARE PENTRU CA COMPARA ADRESELE DIN MEMORIE NU SIRURILE this->denumire==c.denumire
+            strcmp(this->denumire,c.denumire)==0
+            );
+    }
+    
+
+    //AL DOILEA PAS:DESTRUCTOR
+
+    ~Caracter() {
+        if (this->listaArme != nullptr) {
+            delete[] this->listaArme;
+            this->listaArme = nullptr;
+        }
+        if (this->denumire!= nullptr) {
+            delete[] this->denumire;
+            this->denumire = nullptr;
+        }
+    }
+
+    //AL TREILEA PAS:AFISARE
+
+    friend ostream& operator<<(ostream& out, const Caracter& c) {
+        out << "\nSe numeste: " << c.denumire;
+        out << "\nTipul de caracter este: " << c.tipCaracter;
+        out << "\nLista de arme este: ";
+        if(c.listaArme != nullptr && c.nrArme > 0) {
+            for (int i = 0; i < c.nrArme; i++) {
+                out << c.listaArme[i]<<" ";
+            }
+        }
+        else
+        {
+            out << "\nNU EXISTA";
+        }
+        out << "\nNumarul de arme este: " << c.nrArme;
+        out << "\nNivelul de viata este: " << c.nivelViata;
+        return out;
+    }
+    int getNrArme() const { return nrArme; }
+    const char* getDenumire() const { return denumire; }
+    float* getListaArme() const { return listaArme; }
+    TipCaracter getTip() const { return tipCaracter; }
+};
+
+//AL TRISPELEA PAS: CLASA JOC VIDEO
+class JocVideo {
+private:
+    char* titlu;
+    Caracter* caractere;  //RELATIA 1-M,adica 1 la mai multi clasa pe care am facut o noi inainte stocheaza acum mai multe caractere
+    int nrCaractere;
+public:
+    //constructorul default
+    JocVideo() {
+        this->titlu = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->titlu, "NECUNOSCUT");
+        this->caractere = nullptr;
+        this->nrCaractere = 0;
+    }
+    //constructor cu toti parametrii
+    JocVideo(const char* _titlu, Caracter* _caractere, int nr) {
+        this->titlu = new char[strlen(_titlu) + 1];
+        strcpy(this->titlu, _titlu);
+        this->nrCaractere = nr;
+        this->caractere = new Caracter[nr]; //avem nevoie de nr de caractere pentru a face vectorul sa stim pana unde se opreste de asta egalam caractre cu numarul de caractere
+        for (int i = 0; i < nr; i++) {
+            this->caractere[i] = _caractere[i];
+        }
+
+    }
+    //op = chiar daca nu ne cere ne trebuie pentru ca avem pointer si cand vrem sa afisam j2 ne va da eroare pentru ca va face o copie superficiala
+    JocVideo& operator=(const JocVideo& j) {
+        if (this != &j) {
+            if (this->titlu != nullptr) {
+                delete[] this->titlu;
+                this->titlu = nullptr;
+            }
+            if (this->caractere != nullptr) {
+                delete[] this->caractere;
+                this->caractere = nullptr;
+            }
+            this->titlu = new char[strlen(j.titlu) + 1];
+            strcpy(this->titlu, j.titlu);
+            this->nrCaractere = j.nrCaractere;
+            this->caractere = new Caracter[j.nrCaractere]; //avem nevoie de nr de caractere pentru a face vectorul sa stim pana unde se opreste de asta egalam caractre cu numarul de caractere
+            for (int i = 0; i < j.nrCaractere; i++) {
+                this->caractere[i] = j.caractere[i];
+            }
+        }
+        return *this;
+    }
+
+    //ELIMINAM CARACTERELE DE UN ANUMIT TIP,deci folosim operatorul -
+    //j2=j1-ZBURATOR
+    JocVideo operator-(TipCaracter eliminam) {
+        int nrRaman = 0;
+        for (int i = 0; i < nrCaractere; i++) {
+            if (caractere[i].getTip() != eliminam)
+                nrRaman++;
+        }
+        Caracter* listaNoua = new Caracter[nrRaman];
+        //copiem acuma ce a ramas dupa ce am eliminat ce voiam
+        int index = 0;
+        for (int i = 0; i < nrCaractere; i++) {
+            if (caractere[i].getTip() != eliminam) {
+                listaNoua[index++] = caractere[i];
+            }
+        }
+        //acum consruim un joc nou fara ala pe care l am eliminat
+        JocVideo nouJoc(this->titlu, listaNoua, nrRaman);
+    
+        //eliberam
+        delete[] listaNoua;
+        return nouJoc;
+    }   
+
+   // afiseaza arma cu o putere maxima din toate caracterele 
+    //cout<<(float)j2;
+
+    explicit operator float() {
+        float maxArma = 0;
+        for (int i = 0; i < nrCaractere; i++) {
+            float* arme = caractere[i].getListaArme();
+            for (int j = 0; j < caractere[i].getNrArme(); j++) {
+                if (arme[j] > maxArma)
+                    maxArma = arme[j];
+            }
+        }
+        return maxArma;
+    }
+    //destructor
+    ~JocVideo() {
+        if (this->titlu != nullptr) {
+            delete[] this->titlu;
+            this->titlu = nullptr;
+        }
+        if (this->caractere != nullptr) {
+            delete[] this->caractere;
+            this->caractere = nullptr;
+        }
+    }
+    
+    friend ostream& operator<<(ostream& out, const JocVideo& j) {
+        out << "\nTitlul jocului este: " << j.titlu;
+        out << "\nNr de caractere este: " << j.nrCaractere;
+        out << "\nLISTA CARACTERE: ";
+        for (int i = 0; i < j.nrCaractere; i++) {
+            out << j.caractere[i] << endl;
+        }
+        return out;
+    }
+};
+
+int main() {
+    //AL PATRULEA PAS:RULAM CONSTRUCTORUL DEFAULT
+
+    Caracter c0;
+    cout << c0;
+    cout << endl;
+
+    //AL SASELEA PAS:RULARE CONSTRUCTOR CU TOTI PARAMETRII
+    Caracter c1("Razboinicul luminii", ZBURATOR, nullptr, 0, 100);
+    cout << c1;
+    cout << endl;
+
+    //AL OPTULEA PAS:RULARE CONSTRUCTORUL DOAR CU DENUMIRE
+    Caracter c2 = "Pacaliciosul";
+    cout << c2;
+    cout << endl;
+    //AL ZECELEA PAS: RULARE POST INCREMENTARE //FACEM ALT CONSTRUCTOR
+    float vector1[] = { 4, 8, 9 };
+    Caracter c3("SIRENA", APA, vector1, 3, 55);
+     c3++;
+     cout << c3;
+
+     cout << endl;
+     //AL DOISPELEA PAS: VERIFICAM DACA SUNT EGALE LUAM CONSTRUCTORII C1 SI C3
+     if (c1 == c3) 
+         cout << "\nDA,AVEM MINIM 3 PARAMETRII CARE SUNT EGALI";
+     else
+         cout << "\nNU SUNT EGALI";
+     cout << endl;
+     //VREM SA PUNEM CARACTERELE C1 SI C3 PE CARE LE AM CREAT IN  CLASA JOCVIDEO
+     cout << "\n\nAVEM URMATOARELE CARACTERE IN JOC: ";
+     Caracter lista[] = { c1,c3 };
+     //vreau sa afisez lista
+     JocVideo j1("JOCUL PATRATELE", lista, 2);
+     cout << j1;
+     cout << endl;
+     //ELIMINAM ACUMA
+     cout << "\nDUPA CE AM ELIMINAT ZZBURATOR:";
+     cout << endl;
+     JocVideo j2;
+     j2 = j1 - ZBURATOR;
+     cout << j2;
+
+     cout << endl;
+     cout << "\nPuterea maxma a unei arme din joc: " << float(j2);
+
+    
+}
