@@ -1,0 +1,125 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<string>
+#include<set>
+using namespace std;
+
+class Contact {
+protected:
+    char* nume;              // Alocat dinamic
+    string numarTelefon;     // Atribut simplu
+    int nrApeluri;           // Atribut numeric
+    static int prefixTara;   // Membru static
+public:
+    Contact() {
+        this->nume = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->nume, "NECUNOSCUT");
+        this->numarTelefon = "000000";
+        this->nrApeluri = 0;
+
+    }
+    Contact(const char* n, string nu, int nr) {
+        this->nume = new char[strlen(n) + 1];
+        strcpy(this->nume, n);
+        this->numarTelefon = nu;
+        this->nrApeluri = nr;
+    }
+    Contact(const Contact& c) {
+        this->nume = new char[strlen(c.nume) + 1];
+        strcpy(this->nume, c.nume);
+        this->numarTelefon = c.numarTelefon;
+        this->nrApeluri = c.nrApeluri;
+    }
+    Contact& operator=(const Contact& c) {
+        if (this != &c) {
+            if (this->nume != nullptr) {
+                delete[] this->nume;
+                this->nume = nullptr;
+            }
+            this->nume = new char[strlen(c.nume) + 1];
+            strcpy(this->nume, c.nume);
+            this->numarTelefon = c.numarTelefon;
+            this->nrApeluri = c.nrApeluri;
+
+        }
+        return *this;
+    }
+    //alfabetic
+    bool operator<(const Contact& c) const {
+        return strcmp(this->nume, c.nume) < 0;
+    }
+    void operator+=(int nrapeluriNou) {
+        this->nrApeluri += nrapeluriNou;
+    }
+    const char* getNume() const {
+        return this->nume;
+    }
+    // Getteri
+    
+    virtual void afiseazaTipContact(){
+        cout << "\nAcesta este un contact personal" << endl;
+    }
+
+    ~Contact() {
+        if (this->nume != nullptr) {
+            delete[] this->nume;
+            this->nume = nullptr;
+        }
+    }
+    friend ostream& operator<<(ostream& out, const Contact& c) {
+        out << "\nNumele este: " << c.nume;
+        out << "\nNr de telefon este: " << c.numarTelefon;
+        out << "\nNr apeluri: " << c.nrApeluri;
+        out << "\nPrefixul tarii este: " << c.prefixTara;
+        return out;
+    }
+};
+class ContactAngajat :public Contact {
+private:
+    string firma;
+    double salariu;
+public:
+    ContactAngajat(const char* n, string nu, int nr, string f, double s) :Contact(n, nu, nr) {
+        this->firma = f;
+        this->salariu = s;
+    }
+    void afiseazaTipContact() override {
+        cout << "\nAcesta este un contact profesional" << endl;
+    }
+    friend ostream& operator<<(ostream& out, const ContactAngajat& ca) {
+        out << (const Contact&)ca;
+        out << "\nFirma este: "<<ca.firma;
+        out << "\nSalariul este: " << ca.salariu;
+        return out;
+    }
+};
+//METODA UNICA
+void adaugaContactUnic(set<Contact>& agenda, const Contact& c) {
+    agenda.insert(c);
+}
+int Contact::prefixTara = +40;
+int main() {
+    Contact c1("Popescu Ion", "0722111222",3);
+    cout << c1;
+    cout << endl;
+    c1 += 5; // Adaugam 5 apeluri
+    cout << endl;
+    cout << "c1 dupa += 5 apeluri: " << c1 << endl;
+    cout << endl;
+    Contact c4("Apetrei Dan", "0744000111",5);
+    if (c4 < c1) {
+        cout << c4.getNume() << " este inainte de " << c1.getNume() << " in agenda." << endl;
+    }
+    ContactAngajat ca1("Ionescu Maria", "0744333444",7, "TechCorp", 5000);
+    cout << endl;
+    c1.afiseazaTipContact();
+    cout << endl;
+    ca1.afiseazaTipContact();
+    cout << endl;
+    set<Contact> agenda;
+    agenda.insert(c1);
+    agenda.insert(Contact("Popescu Ion", "0799999999",9)); // Nu se va adăuga, numele e identic
+    cout << endl;
+    cout << "\nAgenda contine " << agenda.size() << " contacte unice." << endl;
+        
+}
