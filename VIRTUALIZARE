@@ -1,0 +1,154 @@
+
+
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+class IBehaivor {
+public:
+	virtual void Eat() = 0;
+	virtual void Drink() = 0;
+	virtual ~IBehaivor(){}
+};
+class Animal :public IBehaivor {
+protected:
+	char* name;
+	int age;
+public:
+	Animal(const char* name, int age) : age(age) {
+		this->name = new char[strlen(name) + 1];
+		strcpy_s(this->name, strlen(name) + 1, name);
+	}
+	virtual ~Animal() {
+		cout << "\nDestroying Animal";
+		delete[] this->name;
+	}
+
+	//METODA NON-VIRTALA
+	void WhatAmI() {
+		cout << "\nI am an animal";
+	}
+	//METODA VIRTAUUALA PURA
+	virtual void Speak() = 0;
+
+	//METODA VIRTUALA
+	virtual void Display() {
+		cout << "\nNmae " << name << " age " << age;
+	}
+};
+
+class Dog :public Animal {
+private:
+	char* owner;
+public:
+	Dog(const char* name,int age,const char* owner) :Animal(name, age) {
+		this->owner = new char[strlen(owner) + 1];
+		strcpy_s(this->owner, strlen(owner) + 1, owner);
+	}
+	~Dog() override{
+		cout << "\nDestroying DOG";
+	}
+
+	//SHADOWING NU POIMORFICA
+	void WhatAmI() {
+		cout << "\nI am a dog";
+	}
+	//SUPRAINCARCARE
+	void Display() override {
+		Animal::Display();
+		cout << "\nOwner " << owner << endl;
+	}
+	void Speak() override {
+		cout << "\nWOLF";
+	}
+
+	//IMPLEMENTAREA METODELOR DE INTERFATA
+	void Eat() override {
+		cout << "Dog eats dog food\n";
+	}
+
+	// Implementarea metodelor din interfata
+	void Drink() override {
+		cout << "Dog drinks water\n";
+	}
+};
+
+class Cat : public Animal {
+private:
+	char* breed;
+
+public:
+	Cat(const char* name, int age, const char* breed)
+		: Animal(name, age) {
+		this->breed = new char[strlen(breed) + 1];
+		strcpy_s(this->breed, strlen(breed) + 1, breed);
+	}
+
+	// Destructor 
+	~Cat() override {
+		cout << "Destroying Cat\n";
+		delete[] breed;
+	}
+
+	// Shadowing, nu polimorfica
+	void WhatAmI() {
+		cout << "I am a cat\n";
+	}
+
+	// Suprascrierea metodei virtuale
+	void Display() override {
+		Animal::Display();
+		cout << "Breed: " << breed << endl;
+	}
+
+	// Suprascrierea metodei virtuale pure
+	void Speak() override {
+		cout << "Meow\n";
+	}
+
+	// Implementarea metodelor din interfata
+	void Eat() override {
+		cout << "Cat eats cat food\n";
+	}
+
+	// Implementarea metodelor din interfata
+	void Drink() override {
+		cout << "Cat drinks milk\n";
+	}
+};
+int main() {
+	Animal* animals[2];
+	animals[0] = new Cat("Coco", 5, "Maine COON");
+	animals[1] = new Dog("Labus", 10, "Lucian");
+
+	//deoarece metoda WHATAMI nu este virtuala se apeleaza
+	//versiunea din clasa de baza
+	//iar programul va afisa mereu I AM AN ANIMAL
+	for (int i = 0; i < 2; i++) {
+		animals[i]->WhatAmI();
+	}
+	for (int i = 0; i < 2; i++) {
+		//deoarece display si speak sunt virtuake
+		//se apeleaza versiunile din clasele derivate
+		animals[i]->Display();
+		animals[i]->Speak();
+		cout << endl;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		//apelam metodele din interfata Ibehavior
+		//acestea sunt implementate in cls derivate
+		//iar apelurilie vor fi corectate datorita poli
+		IBehaivor* b = animals[i];
+		b->Eat();
+		b->Drink();
+		cout << endl;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		//distrugem
+		delete animals[i];
+	}
+	return 0;
+}
