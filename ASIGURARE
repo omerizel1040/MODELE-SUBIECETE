@@ -1,0 +1,164 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<fstream>
+#include<vector>
+using namespace std;
+
+class Asigurare {
+private:
+    char* numeAsigurat;      // alocat dinamic
+    double sumaAsigurata;    // în lei
+    float* valoriTip;        // vector dinamic cu valori asociate tipuri
+    int nrValori;            // câte valori are vectorul
+    int durata;               // în luni
+    static const double TVA;  // membru const
+public:
+    Asigurare() {
+        this->numeAsigurat = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->numeAsigurat, "NECUNOSCUT");
+        this->sumaAsigurata = 0;
+        this->nrValori = 0;
+        this->valoriTip = nullptr;
+        this->durata = 0;
+    }
+    Asigurare(const char* n, double s, float* v, int nr, int d) {
+        this->numeAsigurat = new char[strlen(n) + 1];
+        strcpy(this->numeAsigurat, n);
+        this->sumaAsigurata = s;
+        this->nrValori = nr;
+        this->valoriTip = new float[nr];
+        for (int i = 0; i < nrValori; i++)
+            this->valoriTip[i] = v[i];
+        this->durata = d;
+    }
+    Asigurare(const Asigurare& a) {
+        this->numeAsigurat = new char[strlen(a.numeAsigurat) + 1];
+        strcpy(this->numeAsigurat, a.numeAsigurat);
+        this->sumaAsigurata = a.sumaAsigurata;
+        this->nrValori = a.nrValori;
+        this->valoriTip = new float[nrValori];
+        for (int i = 0; i < nrValori; i++)
+            this->valoriTip[i] = a.valoriTip[i];
+        this->durata = a.durata;
+    }
+    ~Asigurare() {
+        if (this->numeAsigurat != nullptr) {
+            delete[] this->numeAsigurat;
+            this->numeAsigurat = nullptr;
+        }
+        if (this->valoriTip != nullptr) {
+            delete[] this->valoriTip;
+            this->valoriTip = nullptr;
+        }
+    }
+    friend ostream& operator<<(ostream& out, const Asigurare& a) {
+        out << "\nNumele este: " << a.numeAsigurat;
+        out << "\nSuma este: " << a.sumaAsigurata;
+        out << "\nNr de valori: " << a.nrValori;
+        out << "\nValorile sunt: ";
+        for (int i = 0; i < a.nrValori; i++) {
+            out << a.valoriTip[i] << " ";
+        }
+        out << "\nDurata este: " << a.durata;
+        return out;
+    }
+
+    double operator()(double cursValuta) const {
+        return sumaAsigurata * cursValuta;
+    }
+    //perator converise
+    operator double() const {
+        return sumaAsigurata;
+    }
+   /* friend void operator<<(fstream& outFile, Asigurare a) {
+        outFile << "\nNumele este: " << a.numeAsigurat;
+        outFile << "\nSuma este: " << a.sumaAsigurata;
+        outFile << "\nNr de valori: " << a.nrValori;
+        outFile << "\nValorile sunt: ";
+        for (int i = 0; i < a.nrValori; i++) {
+            outFile << a.valoriTip[i] << " ";
+        }
+        outFile << "\nDurata este: " << a.durata;
+    }*/
+    //friend void operator>>(ifstream& inFile, Asigurare& a) {
+    //    char buffer[100];
+    //    inFile >> ws;
+    //    inFile.getline(buffer, 100);
+    //    if (a.numeAsigurat != nullptr) {
+    //        delete[] a.numeAsigurat;
+    //    }
+    //    a.numeAsigurat = new char[strlen(buffer) + 1];
+    //    strcpy(a.numeAsigurat, buffer);
+    //    inFile >> a.sumaAsigurata;
+    //    if (a.valoriTip != nullptr) delete[] a.valoriTip;
+    //    inFile >> a.nrValori;
+    //    a.valoriTip = new float[a.nrValori];
+    //    for (int i = 0; i < a.nrValori; i++) {
+    //        inFile >> a.valoriTip[i];
+    //    }
+
+    //    // 4. Citire durata
+    //    inFile >> a.durata;
+
+    //    
+    //}
+};
+const double Asigurare::TVA = 19.0;
+class Client {
+private:
+    char* numeClient;
+    int varsta;
+    Asigurare contract;
+public:
+    Client(const char* n, int v, Asigurare a):contract(a) {
+        this->numeClient = new char[strlen(n) + 1];
+        strcpy(this->numeClient, n);
+        this->varsta = v;
+      
+    }
+    friend ostream& operator<<(ostream& out, const Client& c) {
+        out << "\n============================";
+        out << "\nCLIENT: " << c.numeClient;
+        out << "\nVARSTA: " << c.varsta;
+        out << "\nDETALII CONTRACT:" << c.contract; // Apeleaza operatorul<< din Asigurare
+        out << "\n============================";
+        return out;
+    }
+};
+int main() {
+    float valori1[] = { 1000, 2000 };
+    Asigurare a1("Ion Popescu", 10000, valori1, 2, 12);
+    cout << a1;
+    cout << endl;
+    cout << "Suma in euro este: " << a1(4.19);
+    cout << endl;
+    float valori2[] = { 988,687,45997 };
+    Asigurare a2("Maria Ionescu", 5000, valori2, 3,50);
+    double opconversie = double(a2);
+    cout << opconversie;
+    cout << endl;
+    Client c1("Maria Ioana", 40, a1);
+    cout << c1;
+    cout << endl;
+    vector<Asigurare> listaAsigurari;
+    listaAsigurari.push_back(a1);
+    listaAsigurari.push_back(a2);
+    double valoareTotala = 0;
+    for (const auto& asig : listaAsigurari) {
+        valoareTotala += double(asig);
+        
+    }
+    cout << "\nVal tot este: " << valoareTotala;
+   /* fstream fileStream("Asigurare.txt", ios::out);
+    fileStream << a1;
+    fileStream.close();
+    cout << endl;
+    Asigurare a_nou;
+   
+    ifstream inputFileStream("Asigurare.txt", ios::in);
+    inputFileStream >> a_nou;
+    inputFileStream.close();
+    cout << a_nou;*/
+
+}
