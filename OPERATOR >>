@@ -1,0 +1,137 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+class CarteVizita {
+private:
+	char* nume;
+	string telefon;
+	string email;
+	string companie;
+	static int nrTotal;
+public:
+	CarteVizita() {
+		this->nume = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->nume, "NECUNOSCUT");
+		this->telefon = "0000000000";
+		this->email = "NECUNOSCUT";
+		this->companie = "NECUNOSCUT";
+	}
+	CarteVizita(const char* n, string t, string e, string co) {
+		this->nume = new char[strlen(n) + 1];
+		strcpy(this->nume, n);
+		this->telefon = t;
+		this->email = e;
+		this->companie = co;
+	}
+	CarteVizita(const CarteVizita& c) {
+		this->nume = new char[strlen(c.nume) + 1];
+		strcpy(this->nume, c.nume);
+		this->telefon = c.telefon;
+		this->email = c.email;
+		this->companie = c.companie;
+	}
+	CarteVizita& operator=(const CarteVizita& c) {
+		if (this != &c) {
+			if (this->nume != nullptr) {
+				delete[] this->nume;
+				this->nume = nullptr;
+			}
+			this->nume = new char[strlen(c.nume) + 1];
+			strcpy(this->nume, c.nume);
+			this->telefon = c.telefon;
+			this->email = c.email;
+			this->companie = c.companie;
+		}
+		return*this;
+	}
+	bool operator>=(const CarteVizita& c) {
+		return strcmp(nume, c.nume) >= 0;
+	}
+	virtual void tipCarte() const {
+		cout << "Carte de vizita fizica" << endl;
+	}
+	~CarteVizita() {
+		if (this->nume != nullptr) {
+			delete[] this->nume;
+			this->nume = nullptr;
+		}
+	}
+	/*friend ostream& operator<<(ostream& out, const CarteVizita& c) {
+		out << "\nNumele este: " << c.nume;
+		out << "\nTelefon: " << c.telefon;
+		out << "\nEmail ul este: " << c.email;
+		out << "\nCompania: " << c.companie;
+		return out;
+	}*/
+	friend ostream& operator<<(ostream& out, const CarteVizita& c) {
+		c.afisare(out);   // POLIMORFISM
+		return out;
+	}
+	friend istream& operator>>(istream& in, CarteVizita& c) {
+		if (c.nume != nullptr) {
+			delete[] c.nume;
+			c.nume = nullptr;
+		}
+		cout << "\nIntoduceti numele: ";
+		char buffer[100];
+		in >> ws;
+		in.getline(buffer, 100);
+	
+		c.nume = new char[strlen(buffer) + 1];
+		strcpy(c.nume, buffer);
+		
+
+		cout << "\nIntoduceti nr de telefon: ";
+		in >> c.telefon;
+
+		cout << "\nIntorduceti email ul: ";
+		in >> c.email;
+
+		cout << "\nComapnia este: ";
+		in >> c.companie;
+		return in;
+	}
+	virtual void afisare(ostream& out) const {
+		out << "\nNumele este: " << nume;
+		out << "\nTelefon: " << telefon;
+		out << "\nEmail: " << email;
+		out << "\nCompania: " << companie;
+	}
+};
+int CarteVizita::nrTotal = 5;
+class CarteVizitaElectronica :public CarteVizita {
+private:
+	string link;
+public:
+	CarteVizitaElectronica(const char* n, string t, string e, string co, string l) :CarteVizita(n, t, e, co) {
+		this->link = l;
+	}
+	void tipCarte() const override {
+		cout << "\nCarte de vizita ELECTRONICA" << endl;
+	}
+	void afisare(ostream& out) const override {
+		CarteVizita::afisare(out);
+		out << "\nLinkul este: " << link;
+	}
+};
+int main() {
+	CarteVizita c2;
+	/*cin >> c2;
+	cout << c2;*/
+	cout << endl;
+	CarteVizita c1 ("Ion Popescumariaana", "0711", "ion@mail.com", "ABC");
+	CarteVizita c3 ("Maria Ionescu", "0722","maria@mail.com", "XYZ ");
+	if (c1 >= c3) {
+		cout << "\nNUMELE C1 MAI MARE";
+	}
+	else
+	{
+		cout << "\nC1 MAI MIC";
+	}
+	cout << endl;
+	CarteVizita* c5=new CarteVizitaElectronica("Maria Ionescu", "0722",
+		"maria@mail.com", "XYZ", "linkedin.com/maria");
+	cout << *c5;
+}
