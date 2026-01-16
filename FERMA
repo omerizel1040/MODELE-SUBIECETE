@@ -1,0 +1,181 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<vector>
+using namespace std;
+
+class Ferma {
+private:
+    const int id;
+    char* denumire;
+    float* venituri;   
+    int nrAni;
+    double cifraAfaceri;
+    static int contor;
+public:
+    Ferma() :id(++contor) {
+        this->denumire = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->denumire, "NECUNOSCUT");
+        this->venituri = nullptr;
+        this->nrAni = 0;
+        this->cifraAfaceri = 0;
+    }
+    Ferma(const char* d, int nr, float* v, double c) :id(++contor) {
+        this->denumire = new char[strlen(d) + 1];
+        strcpy(this->denumire, d);
+        this->venituri = new float[nr];
+        for (int i = 0; i < nr; i++) {
+            this->venituri[i] = v[i];
+        }
+        this->nrAni = nr;
+        this->cifraAfaceri = c;
+    }
+    Ferma(const Ferma& f):id(++contor) {
+        this->denumire = new char[strlen(f.denumire) + 1];
+        strcpy(this->denumire, f.denumire);
+        this->venituri = new float[f.nrAni];
+        for (int i = 0; i <f.nrAni; i++) {
+            this->venituri[i] = f.venituri[i];
+        }
+        this->nrAni = f.nrAni;
+        this->cifraAfaceri = f.cifraAfaceri;
+    }
+    Ferma& operator=(const Ferma& f) {
+        if (this->denumire != nullptr) {
+            delete[] this->denumire;
+            this->denumire = nullptr;
+        }
+        if (this->venituri != nullptr) {
+            delete[] this->venituri;
+            this->venituri = nullptr;
+        }
+        this->denumire = new char[strlen(f.denumire) + 1];
+        strcpy(this->denumire, f.denumire);
+        this->venituri = new float[f.nrAni];
+        for (int i = 0; i < f.nrAni; i++) {
+            this->venituri[i] = f.venituri[i];
+        }
+        this->nrAni = f.nrAni;
+        this->cifraAfaceri = f.cifraAfaceri;
+        return*this;
+    }
+    virtual float calculVenit() const = 0;
+    ~Ferma() {
+        if (this->denumire != nullptr) {
+            delete[] this->denumire;
+            this->denumire = nullptr;
+        }
+        if (this->venituri != nullptr) {
+            delete[] this->venituri;
+            this->venituri = nullptr;
+        }
+    }
+    friend ostream& operator<<(ostream& out, const Ferma& f) {
+        out << "\nID ul este: " << f.id;
+        out << "\nDenumirea fermei este: " << f.denumire;
+        out << "\nNr ani: " << f.nrAni;
+        out << "\nVeniturile pe fiecare an sunt: ";
+        if (f.nrAni > 0 && f.venituri != nullptr) {
+            for (int i = 0; i < f.nrAni; i++)
+            {
+                out << f.venituri[i]<<" ";
+            }
+
+        }
+        out << "\nCifra de afaceri este: " << f.cifraAfaceri;
+        return out;
+    }
+};
+int Ferma::contor = 0;
+
+class FermaVegetala :public Ferma {
+private:
+    int ha;
+    float Venitha;
+public:
+    FermaVegetala() :Ferma() {
+        this->ha = 0;
+        this->Venitha = 0;
+    }
+    FermaVegetala(const char* d, int nr, float* v, double c, int h, int ve) :Ferma(d, nr, v, c) {
+        this->ha = h;
+        this->Venitha = ve;
+    }
+    float calculVenit() const override {
+        return ha * Venitha;
+    }
+    FermaVegetala& operator+=(int n) {
+        this->ha += n;
+        return*this;
+    }
+    friend ostream& operator<<(ostream& out, const FermaVegetala& fe) {
+        out << (Ferma&)fe;
+        out << "\nHectare: " << fe.ha;
+        out << "\nVenitu este: " << fe.Venitha;
+        return out;
+    }
+};
+class FermaZootehnica :public Ferma {
+private:
+    int nrAnimale;
+    float venitPeAnimal;
+public:
+    FermaZootehnica(const char* d, int nr, float* v, double c, int nra, float ve) :Ferma(d, nr, v, c) {
+        this->nrAnimale = nr;
+        this->venitPeAnimal = ve;
+    }
+    FermaZootehnica& operator+=(int n) {
+        this->nrAnimale += n;
+        return *this;
+    }
+    float calculVenit() const override {
+        return nrAnimale * venitPeAnimal;
+    }
+    friend ostream& operator<<(ostream& out, const FermaZootehnica& fz) {
+        out << (Ferma&)fz;
+        out << "\nNr de animale: " << fz.nrAnimale;
+        out << "\nVenit pe animale: " << fz.venitPeAnimal;
+        return out;
+
+    }
+};
+
+int main() {
+    /*Ferma f0;
+    cout << f0;
+    cout << endl;
+    float vector1[] = { 5964,4789,1477 };
+    float vector2[] = { 1234,5879,4625,4879 };
+    Ferma f1("TARA", 3, vector1, 50000),f2(f1);
+    Ferma f3("ORAS", 4, vector2, 8900);
+    cout << f1;
+    cout << endl;
+    cout << f2;
+    cout << endl;
+    cout << f3;
+    f1 = f3;
+    cout << endl;
+    cout << f1;
+    cout << endl;
+    float vector3[] = { 45,10 };
+    FermaVegetala fv1("SAT",2,vector3,870, 56, 8798);
+    cout << fv1;*/
+    // --- VECTOR CU FERME MIXTE (Polimorfism cu vector) ---
+    vector<Ferma*> fermeVector;
+
+    float venituriV[] = { 1000.5f, 2000.0f };
+    float venituriZ[] = { 3000.0f, 4000.0f, 5000.0f };
+
+    fermeVector.push_back(new FermaVegetala("Cereale SRL", 2, venituriV, 50000, 100, 450.5f));
+
+    // La fel si pentru Zootehnica (6 argumente)
+    fermeVector.push_back(new FermaZootehnica("Vaca Vesela", 3, venituriZ, 80000, 50, 1200.0f));
+
+    float venitTotalVector = 0;
+    for (auto f : fermeVector) {
+        venitTotalVector += f->calculVenit();
+    }
+    cout << "Venit total vector (vegetale + zootehnice): " << venitTotalVector << " lei" << endl;
+    for (auto f : fermeVector) delete f;
+
+}
