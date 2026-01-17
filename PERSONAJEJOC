@@ -1,0 +1,334 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<vector>
+#include<set>
+#include<map>
+using namespace std;
+
+
+class IEntitateJoc {
+public:
+	virtual void actioneaza() = 0;
+	virtual ~IEntitateJoc(){}
+};
+
+class PersonajJoc:public IEntitateJoc {
+protected:
+	char* nume;
+	int nrLovituri;
+	int* punctePeLovitura;
+public:
+
+	PersonajJoc() {
+		this->nume = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->nume, "NECUNOSCUT");
+		this->nrLovituri = 0;
+		this->punctePeLovitura = nullptr;
+	}
+	PersonajJoc(const char* n, int nr, int* p) {
+		this->nume = new char[strlen(n) + 1];
+		strcpy(this->nume, n);
+		this->nrLovituri = nr;
+		this->punctePeLovitura = new int[nr];
+		if (nr > 0 && p != nullptr) {
+			for (int i = 0; i < nr; i++) {
+				this->punctePeLovitura[i] = p[i];
+			}
+		}
+	}
+	PersonajJoc(const PersonajJoc& p) {
+		this->nume = new char[strlen(p.nume) + 1];
+		strcpy(this->nume, p.nume);
+		this->nrLovituri = p.nrLovituri;
+		this->punctePeLovitura = new int[p.nrLovituri];
+		if (p.nrLovituri > 0 && p.punctePeLovitura != nullptr) {
+			for (int i = 0; i < p.nrLovituri; i++) {
+				this->punctePeLovitura[i] = p.punctePeLovitura[i];
+			}
+		}
+	}
+	PersonajJoc& operator=(const PersonajJoc& p) {
+		if (this != &p) {
+			if (this->nume != nullptr) {
+				delete[] this->nume;
+				this->nume = nullptr;
+			}
+			if (this->punctePeLovitura != nullptr) {
+				delete[] this->punctePeLovitura;
+				this->punctePeLovitura = nullptr;
+			}
+			this->nume = new char[strlen(p.nume) + 1];
+			strcpy(this->nume, p.nume);
+			this->nrLovituri = p.nrLovituri;
+			this->punctePeLovitura = new int[p.nrLovituri];
+			if (p.nrLovituri > 0 && p.punctePeLovitura != nullptr) {
+				for (int i = 0; i < p.nrLovituri; i++) {
+					this->punctePeLovitura[i] = p.punctePeLovitura[i];
+				}
+			}
+		}
+		return *this;
+	}
+	//set lovi
+	void setLovituri(int nr, int* puncte) {
+		if (nr > 0 && puncte != nullptr) {
+			if (this->punctePeLovitura != nullptr) {
+				delete[] this->punctePeLovitura;
+			}
+			this->nrLovituri = nr;
+			this->punctePeLovitura = new int[nr];
+			for (int i = 0; i < nr; i++) {
+				this->punctePeLovitura[i] = puncte[i];
+			}
+		}
+	}
+	//operatorul +
+	PersonajJoc operator+(const PersonajJoc& p) {
+		PersonajJoc copie = *this;
+		int* puncteNoi = new int[this->nrLovituri + p.nrLovituri];
+		for (int i = 0; i < this->nrLovituri; i++) puncteNoi[i] = this->punctePeLovitura[i];
+		for (int i = 0; i < p.nrLovituri; i++) puncteNoi[this->nrLovituri + i] = p.punctePeLovitura[i];
+		copie.setLovituri(this->nrLovituri + p.nrLovituri, puncteNoi);
+		delete[] puncteNoi;
+		return copie;
+	
+	}
+	//index
+	int& operator[](int index) {
+		if (index >= 0 && index < nrLovituri) {
+			return this->punctePeLovitura[index];
+		}
+		throw out_of_range("INDEX INVALD");
+	}
+	//functie
+	void operator()(int bonus) {
+		for (int i = 0; i < nrLovituri; i++) {
+			this->punctePeLovitura[i] += bonus;
+		}
+	}
+	//explicit
+	explicit operator float() {
+		if (this->nrLovituri == 0) return 0;
+		float suma = 0;
+		for (int i = 0; i < nrLovituri; i++)
+			suma += this->punctePeLovitura[i];
+		return suma / nrLovituri;
+	}
+	PersonajJoc& operator+=(int valoare) {
+		this->nrLovituri += valoare;
+		return *this;
+	}
+	int getnrLovituri() {
+		return this->nrLovituri;
+	}
+	bool operator>=(const PersonajJoc& p) {
+		int sumaa = 0;
+		int sumap = 0;
+		for (int i = 0; i < nrLovituri; i++) {
+			sumaa += punctePeLovitura[i];
+		}
+		for (int i = 0; i < p.nrLovituri; i++) {
+			sumap += p.punctePeLovitura[i];
+		}
+		return sumaa >= sumap;
+	}
+	bool operator>(const PersonajJoc& p) {
+		int sumaa = 0;
+		int sumap = 0;
+		for (int i = 0; i < nrLovituri; i++) {
+			sumaa += punctePeLovitura[i];
+		}
+		for (int i = 0; i < p.nrLovituri; i++) {
+			sumap += p.punctePeLovitura[i];
+		}
+		return sumaa >= sumap;
+	}
+
+	void actioneaza() override {
+		cout << "\nPersonajul" << this->nume << "isi foloseste puterile" << endl;
+	}
+	bool operator<(const PersonajJoc& p) const {
+		int s1 = 0, s2 = 0;
+		for (int i = 0; i < nrLovituri; i++) s1 += punctePeLovitura[i];
+		for (int i = 0; i < p.nrLovituri; i++) s2 += p.punctePeLovitura[i];
+		return s1 < s2;
+	}
+	~PersonajJoc() {
+		if (this->nume != nullptr) {
+			delete[] this->nume;
+			this->nume = nullptr;
+		}
+		if (this->punctePeLovitura != nullptr) {
+			delete[] this->punctePeLovitura;
+			this->punctePeLovitura = nullptr;
+		}
+	}
+	friend ostream& operator<<(ostream& out, const PersonajJoc& p) {
+		out << "\nNumele este: " << p.nume;
+		out << "\nNr de lovituri este: " << p.nrLovituri;
+		out << "\nPunctajele pe lovituri sunt: ";
+		if (p.nrLovituri > 0 && p.punctePeLovitura != nullptr) {
+			for (int i = 0; i < p.nrLovituri; i++) {
+				out << p.punctePeLovitura[i] << " ";
+			}
+		}
+		return out;
+	}
+
+	friend istream& operator>>(istream& in,  PersonajJoc& p) {
+		cout << "\nIntorduceti numele: ";
+		char buffer[100];
+		in >> ws;//ignora spatiile libere
+		in.getline(buffer, 100);//citetse tot randul inclusiv spatiile libere
+		delete[] p.nume;
+		p.nume = new char[strlen(buffer) + 1];
+		strcpy(p.nume, buffer);
+
+		cout << "\nIntroduceti nr de lovituri: ";
+		in >> p.nrLovituri;
+
+		delete[] p.punctePeLovitura;
+		if (p.nrLovituri > 0) {
+			p.punctePeLovitura = new int[p.nrLovituri];
+			for (int i = 0; i < p.nrLovituri; i++) {
+				cout << "\nIntorduceti punctele " << i + 1;
+				in >> p.punctePeLovitura[i];
+			}
+		}
+		else
+		{
+			p.punctePeLovitura = nullptr;
+		}
+		return in;
+
+	}
+};
+class Erou :public PersonajJoc {
+private:
+	int nivelPutere;
+public:
+	Erou(const char* n, int nr, int* p, int ni) :PersonajJoc(n, nr, p) {
+		this->nivelPutere = ni;
+	}
+	friend ostream& operator<<(ostream& out, const Erou& e) {
+		out << (PersonajJoc&)e;
+		out << "\nnNivelul puetrii este: "<<e.nivelPutere;
+		return out;
+	}
+};
+template<typename T>
+T gasesteMaxim(T a, T b) {
+	if (a > b) {
+		return a;
+	}
+	else
+	{
+		return b;
+	}
+}
+class AbilitateSpaciala {
+public:
+	virtual void folosireAbilitate() = 0;
+	virtual ~AbilitateSpaciala(){}
+};
+int main() {
+	PersonajJoc p0;
+	/*cout << p0;*/
+	cout << endl;
+	int vector1[] = { 6,9,10 };
+	int vector2[] = { 22,85,49,789 };
+	PersonajJoc p1("Batman", 3, vector1);
+	PersonajJoc p2("Jocker", 4, vector2);
+	PersonajJoc p3("Robin", 2, new int[2]{11,49});
+	/*PersonajJoc fuzione = p1 + p2;*/
+	cout << endl;
+	p1(10);
+	cout << "+10";
+	cout << p1;
+
+	cout << "OPERATROUL +:-----";
+	/*cout << fuzione;*/
+	cout << endl;
+	cout <<"Pentru 1 este: "<< p1[0];
+	p1[0] = 55;
+	cout << "\nAcum este: " << p1[0];
+	cout << endl;
+	float medie = float(p1);
+	cout << "MEDIA PT P1 ESTE: " << medie << endl;
+	/*cout << p1;
+	cout << endl;
+	Erou e1("Batman", 3, vector1, 45);
+	cout << e1;
+	cout << endl;
+	int x = 10, y = 20;
+	cout << "\nMaximul este: " << gasesteMaxim<int>(x, y) << endl;
+	cout << endl;
+	PersonajJoc castigator = gasesteMaxim<PersonajJoc>(p1, p2);
+	cout << "Cel mai bun este: " << castigator << endl;*/
+	
+	/*p1 = p2;
+	cout << p1;*/
+	/*PersonajJoc p2;
+	cin >> p2;
+	cout << endl;
+	cout << p2;*/
+
+	//cout << endl;
+	//p2 += 2;
+	//cout << "\nAcum pentru p2 nr de lovituri(nou) este: " << p2.getnrLovituri();
+	/*if (p1 >= p2) {
+		cout << "\nP1 MAI MARE";
+	}
+	else
+	{
+		cout << "\nP1 MAI MIC";
+	}*/
+	//cout << endl;
+	//IEntitateJoc* p = new PersonajJoc("BATMAN", 3, new int[3] {10, 20, 30});
+
+	////APEL POLIMORFIC
+	//p->actioneaza();
+	//delete p;
+
+	//cout << endl;
+	//int l1[] = { 10, 20 };
+	//int l2[] = { 50, 60 };
+	//vector<PersonajJoc> listaMea;
+	//listaMea.push_back(PersonajJoc("Batman", 2, l1));
+	//listaMea.push_back(PersonajJoc("Superman", 2, l2));
+	//cout << "\nLista este: " << listaMea.size() << endl;
+	////VARIANTA DE PARCURGERE
+	//for (const auto& p : listaMea) {
+	//	cout << p << endl;
+	//}
+	//// Putem accesa elemente ca la un vector normal
+	//if (!listaMea.empty()) {
+	//	cout << "Primul personaj din lista este: " << listaMea[0] << endl;
+	//}
+
+	//cout << endl;
+	///*cout << "\n------SET-------";*/
+	//set<PersonajJoc> multimePersonaje;
+	//multimePersonaje.insert(p1);
+	//multimePersonaje.insert(p2);
+	//multimePersonaje.insert(p3);
+	//cout << "\n--- Elemente in SET (ordonate dupa punctaj) ---";
+	//for (const auto& p : multimePersonaje) {
+	//	cout << p << endl;
+	//}
+
+
+	//map<string, PersonajJoc> dictionarPersonaje;
+	//dictionarPersonaje["EROU PRINCIPAL"] = p1;
+	//dictionarPersonaje["RAUFACTOR"] = p2;
+	// //Căutare rapidă după cheie
+	//	cout << "\n--- Cautare in MAP dupa cheia 'Erou_Principal' ---";
+	//cout << dictionarPersonaje["Erou_Principal"] << endl;
+
+	//// Parcurgere MAP
+	//for (auto const& [cheie, valoare] : dictionarPersonaje) {
+	//	cout << "Cheie: " << cheie << " | " << valoare << endl;
+	//return 0;
+	return 0;
+}
