@@ -1,0 +1,7 @@
+
+//OPERATORU +
+//VALOARE+OBIECT
+friend Sejur operator+(int valoare, Sejur s) {
+    s.nrPersoane += valoare;
+    return s;
+}
