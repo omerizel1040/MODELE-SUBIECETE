@@ -5,3 +5,13 @@ friend Sejur operator+(int valoare, Sejur s) {
     s.nrPersoane += valoare;
     return s;
 }
+
+void adaugaSejur(Sejur* s) {
+    Sejur** nou = new Sejur*[nrSejururi + 1];
+    for (int i = 0; i < nrSejururi; i++) 
+        nou[i] = colectieSejururi[i];
+    nou[nrSejururi] = s;
+    delete[] colectieSejururi;
+    colectieSejururi = nou;
+    nrSejururi++;
+}
