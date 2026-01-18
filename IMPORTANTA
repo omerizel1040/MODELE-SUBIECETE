@@ -1,0 +1,198 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<fstream>
+using namespace std;
+
+//INTERFATA CLASA ABSTRACTA
+class IElementAriva {
+public:
+	virtual float pretFinal() = 0;
+	virtual ~IElementAriva(){}
+};
+
+class Carte:public IElementAriva{
+private:
+	char* titlu;
+	int nrPagini;
+	float* istoricPreturi;
+	int nrModificari;
+	const int idCarte;
+	static int contor;
+public:
+	Carte():idCarte(++contor) {
+		this->titlu = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->titlu, "NECUNOSCUT");
+		this->nrPagini = 0;
+		this->istoricPreturi = nullptr;
+		this->nrModificari = 0;
+		
+	}
+	Carte(const char* t, int n, float* ist, int nr) :idCarte(++contor) {
+		this->titlu = new char[strlen(t) + 1];
+		strcpy(this->titlu, t);
+		this->nrPagini = n;
+		this->istoricPreturi = new float[nr];
+		if (nr > 0 && ist != nullptr) {
+			for (int i = 0; i < nr; i++) {
+				this->istoricPreturi[i] = ist[i];
+			}
+		}
+		this->nrModificari = nr;
+	}
+	Carte(const Carte& c) :idCarte(++contor){
+		this->titlu = new char[strlen(c.titlu) + 1];
+		strcpy(this->titlu, c.titlu);
+		this->nrPagini = c.nrPagini;
+		this->istoricPreturi = new float[c.nrModificari];
+		if (c.nrModificari > 0 && c.istoricPreturi != nullptr) {
+			for (int i = 0; i < c.nrModificari; i++) {
+				this->istoricPreturi[i] = c.istoricPreturi[i];
+			}
+		}
+		this->nrModificari = c.nrModificari;
+	}
+	Carte& operator=(const Carte& c) {
+		if (this->titlu != nullptr) {
+			delete[] this->titlu;
+			this->titlu = nullptr;
+		}
+		if (this->istoricPreturi != nullptr)
+		{
+			delete[] this->istoricPreturi;
+			this->istoricPreturi = nullptr;
+		}
+		this->titlu = new char[strlen(c.titlu) + 1];
+		strcpy(this->titlu, c.titlu);
+		this->nrPagini = c.nrPagini;
+		this->istoricPreturi = new float[c.nrModificari];
+		if (c.nrModificari > 0 && c.istoricPreturi != nullptr) {
+			for (int i = 0; i < c.nrModificari; i++) {
+				this->istoricPreturi[i] = c.istoricPreturi[i];
+			}
+		}
+		this->nrModificari = c.nrModificari;
+	}
+	//pret mediu
+	float pretFinal() override {
+		if (nrModificari > 0 && istoricPreturi != nullptr) {
+			float suma = 0;
+			for (int i = 0; i < nrModificari; i++) {
+				suma += istoricPreturi[i];
+			}
+			return suma / nrModificari;
+		}
+		return 0;
+	}
+	~Carte() {
+		if (this->titlu != nullptr) {
+			delete[] this->titlu;
+			this->titlu = nullptr;
+		}
+		if (this->istoricPreturi != nullptr)
+		{
+			delete[] this->istoricPreturi;
+			this->istoricPreturi = nullptr;
+		}
+	}
+	friend ostream& operator<<(ostream& out, const Carte& c) {
+		out << "\nID ul este: " << c.idCarte;
+		out << "\nTitlul este: " << c.titlu;
+		out << "\nNr de pagini este: " << c.nrPagini;
+		out << "\nNr de modificari este: " << c.nrModificari;
+		out << "\nIstoricul preturilor: ";
+		for (int i = 0; i < c.nrModificari; i++) {
+			out << c.istoricPreturi[i] << " ";
+		}
+		return out;
+
+	}
+
+};
+int Carte::contor = 0;
+
+class ManualScolar :public Carte {
+private:
+	string materie;
+public:
+	ManualScolar() :Carte() {
+		this->materie = "NECUNOSCUT";
+	}
+	ManualScolar(const char* t, int n, float* ist, int nr, string m) :Carte(t, n, ist, nr) {
+		this->materie = m;
+	}
+	float pretFinal() override {
+		cout << "\nDEOARECE SUNT MANUALE SUNT GRATIS" << endl;
+		return 0;
+	}
+	friend ostream& operator<<(ostream& out, const ManualScolar& m) {
+		out << (Carte&)m;
+		out << "\nMateria este: " << m.materie;
+		return out;
+	}
+};
+class Librarie {
+private:
+	string nume;
+	Carte* inventar;
+	int nrCarti;
+public:
+	Librarie(string n,Carte* in,int nr) {
+		this->nume = n;
+		this->inventar = new Carte[nr];
+		for (int i = 0; i < nr; i++) {
+			this->inventar[i] = in[i];
+		}
+		
+		this->nrCarti = nr;
+	}
+	void adauga(const Carte& c) {
+		Carte* temp = new Carte[this->nrCarti + 1];
+		for (int i = 0; i < nrCarti; i++) {
+			temp[i] = this->inventar[i];
+		}
+		temp[this->nrCarti] = c;
+		delete[] this->inventar;
+		this->inventar = temp;
+		this->nrCarti++;
+
+	}
+	friend ostream& operator<<(ostream& out, const Librarie& l) {
+		out << "\nNumele librariei estte: " << l.nume;
+		out << "\nNr carti: " << l.nrCarti;
+		for (int i = 0; i < l.nrCarti; i++) {
+			out << l.inventar[i] << endl;
+		}
+		return out;
+	}
+
+};
+int main() {
+	float vector1[] = { 45,55,60 };
+	float vector2[] = { 4.2,56,9.2,22 };
+
+	IElementAriva* e1 = new Carte("POO", 250, vector1, 3);
+	Carte* c = (Carte*)e1;
+	cout << *c;
+	cout << "\nPret final(POLIMORF): " << e1->pretFinal() << endl;
+	
+	IElementAriva* e2 = new ManualScolar("Matematica", 426, vector2, 4,"Analiza matematica");
+	ManualScolar* m = (ManualScolar*)e2;
+	cout << *m;
+	cout << "\nPretul final: " << e2->pretFinal() << endl;
+	delete e1; //destructor virtual
+	delete e2;
+
+	cout << endl;
+	Carte c1("BCO", 485, vector1, 3);
+	ManualScolar m1("Programare", 125, vector2, 4, "C++");
+	Carte lista[] = { c1,m1 };
+	Librarie l("Librarie centrala",lista,2);
+	cout << endl;
+	cout << l;
+	/*l.adauga(c1);
+	l.adauga(m1);*/
+
+	return 0;
+}
