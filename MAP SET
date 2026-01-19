@@ -1,0 +1,223 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<vector>
+#include<map>
+#include<set>
+using namespace std;
+
+
+class MagazinOnline {
+private:
+    string numeMagazin;
+    int numarProduse;
+    float comisionVanzare;
+    // (1p) Membru alocat dinamic pentru stocuri
+    int* stocuriProduse;
+public:
+    MagazinOnline() {
+        this->numeMagazin = "ANONIM";
+        this->numarProduse = 0;
+        this->comisionVanzare = 0;
+        this->stocuriProduse = nullptr;
+    }
+    MagazinOnline(string nume, int nr, float comision, int* stocuri) {
+        this->numeMagazin = nume;
+        this->numarProduse = nr;
+        this->comisionVanzare = comision;
+        this->stocuriProduse = new int[nr];
+        if (nr > 0 && stocuri != nullptr) {
+            for (int i = 0; i < nr; i++) {
+                this->stocuriProduse[i] = stocuri[i];
+            }
+        }
+        else
+        {
+            this->numarProduse = 0;
+            this->stocuriProduse = nullptr;
+        }
+    }
+    MagazinOnline(const MagazinOnline& m) {
+        if (this != &m) {
+            this->numeMagazin = m.numeMagazin;
+            this->numarProduse = m.numarProduse;
+            this->comisionVanzare = m.comisionVanzare;
+            this->stocuriProduse = new int[m.numarProduse];
+            if (m.numarProduse > 0 && m.stocuriProduse != nullptr) {
+                for (int i = 0; i < m.numarProduse; i++) {
+                    this->stocuriProduse[i] = m.stocuriProduse[i];
+                }
+            }
+            else
+            {
+                this->numarProduse = 0;
+                this->stocuriProduse = nullptr;
+            }
+          
+        }
+       
+       
+    }
+    MagazinOnline& operator=(const MagazinOnline& m) {
+        if (this->stocuriProduse != nullptr) {
+            delete[] this->stocuriProduse;
+            this->stocuriProduse = nullptr;
+        }
+        this->numeMagazin = m.numeMagazin;
+        this->numarProduse = m.numarProduse;
+        this->comisionVanzare = m.comisionVanzare;
+        this->stocuriProduse = new int[m.numarProduse];
+        if (m.numarProduse > 0 && m.stocuriProduse != nullptr) {
+            for (int i = 0; i < m.numarProduse; i++) {
+                this->stocuriProduse[i] = m.stocuriProduse[i];
+            }
+        }
+        else
+        {
+            this->numarProduse = 0;
+            this->stocuriProduse = nullptr;
+        }
+        return *this;
+
+    }
+    string getnumeMagazin() {
+        return this->numeMagazin;
+    }
+    void setnumeMagazin(string numeNou) {
+        this->numeMagazin = numeNou;
+    }
+    int& operator[](int index) {
+        if (index >= 0 && index < numarProduse) {
+            return stocuriProduse[index];
+        }
+        throw exception("Index invalid");
+    }
+    void setStocuri(int* stocuriNoi, int nr) {
+        if (stocuriNoi != nullptr && nr > 0) {
+            delete[] this->stocuriProduse;
+            this->numarProduse = nr;
+            this->stocuriProduse = new int[nr];
+            for (int i = 0; i < nr; i++) {
+                this->stocuriProduse[i] = stocuriNoi[i];
+            }
+        }
+    }
+    // În interiorul clasei MagazinOnline
+    bool operator<(const MagazinOnline& m) const {
+        // Sort?m magazinele dup? nume
+        return this->numeMagazin < m.numeMagazin;
+    }
+
+    bool operator==(const MagazinOnline& m) const {
+        return this->numeMagazin == m.numeMagazin;
+    }
+    ~MagazinOnline() {
+        if (this->stocuriProduse != nullptr) {
+            delete[] this->stocuriProduse;
+            this->stocuriProduse = nullptr;
+        }
+    }
+    friend ostream& operator<<(ostream& out, const MagazinOnline& m) {
+        out << "\nNumele magazinului este: " << m.numeMagazin;
+        out << "\nComisionul este: " << m.comisionVanzare;
+        out << "\nNr de produse: " << m.numarProduse;
+        out << "\nStocurile sunt: ";
+        if (m.numarProduse > 0 && m.stocuriProduse != nullptr) {
+            for (int i = 0; i < m.numarProduse; i++) {
+                out << m.stocuriProduse[i] << " ";
+            }
+        }
+        return out;
+    }
+};
+class Mall {
+private:
+    string denumireMall;
+    MagazinOnline* magazine;
+    int nrMagazine;
+public:
+    Mall(string d, MagazinOnline* ma, int nr) {
+        this->denumireMall = d;
+        this->nrMagazine = nr;
+        this->magazine = new MagazinOnline[nr];
+        for (int i = 0; i < nr; i++) {
+            this->magazine[i] = ma[i];
+        }
+    }
+    ~Mall() {
+        if (this->magazine != nullptr) {
+            delete[] this->magazine;
+            this->magazine = nullptr;
+        }
+    }
+    friend ostream& operator<<(ostream& out, const Mall& m) {
+       /* out << (MagazinOnline&)m;*/
+        out << "\nDenumire: " << m.denumireMall;
+        out << "\nNr de magazine: " << m.nrMagazine;
+        for (int i = 0; i < m.nrMagazine; i++) {
+            out << m.magazine[i] << endl;
+        }
+        return out;
+    }
+};
+
+int main() {
+    MagazinOnline m0;
+    cout << m0;
+    cout << endl;
+    int vector1[] = { 100,5488,475,986 };
+    int vector2[] = { 11,12,13 };
+    int vector3[] = { 1,2,3,4,5 };
+    int vectornou[] = { 5,6 };
+    MagazinOnline m1("PROFI", 4, 10, vector1),m2(m1);
+    MagazinOnline m3("CORA", 3, 12, vector2);
+    MagazinOnline m4("KAUFLAND", 5, 50, vector3);
+    /*cout << m1;
+    cout << endl;
+    cout << m2;
+    m1 = m3;
+    cout << endl;
+    cout << m1;*/
+   /* m2.setStocuri(vectornou, 2);
+    
+        m3.setnumeMagazin("PARIU");
+        cout << "\numele nou este: " << m3.getnumeMagazin();*/
+    /*cout << "\nPozitia 1 este: " << m1[0];
+    m1[0] = 5;
+    cout << "\nAcum este: " << m1[0];
+    cout << endl;
+    cout << "\n-------LISTA DE MAGAZINE ESTE: -----";
+    MagazinOnline lista[] = { m1,m3 };
+    Mall myMall("AFI", lista, 2);
+    //cout << myMall;*/
+    //cout << "\nCU VECTOR:";
+    //vector<MagazinOnline> vMagazin;
+    //vMagazin.push_back(m1);
+    //vMagazin.push_back(m3);
+    //cout << endl;
+    ////AFISARE VECTOR
+    //for (const auto& mg : vMagazin) {
+    //    cout << mg;
+    //}
+    //cout << endl;
+    // 
+    // 
+    //cout << "\nCU SET";
+    //set<MagazinOnline> setmagazin;
+    //setmagazin.insert(m3);
+    //setmagazin.insert(m3);
+    //setmagazin.insert(m1);
+    //setmagazin.insert(m4);
+    //for (const auto& mag : setmagazin) {
+    //    cout << mag;
+    //}
+
+    map<string, MagazinOnline> hartaMagazin;
+    hartaMagazin["MAG01"] = m1;
+    hartaMagazin["MAG02"] = m2;
+    cout << "--- Magazinele din MAP ---" << endl;
+    for (map<string, MagazinOnline>::iterator it = hartaMagazin.begin(); it != hartaMagazin.end(); ++it) {
+        cout << "Cheie: " << it->first << " | "; // Afiseaza "MAG01"
+        cout << "Valoare: " << it->second << endl; // Afiseaza obiectul MagazinOnline
+    }
+}
